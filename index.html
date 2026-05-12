@@ -9,24 +9,31 @@
     :root {
       color-scheme: light dark;
       font-family: Arial, sans-serif;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --card-bg: #ffffff;
+      --card-shadow: rgba(15, 23, 42, 0.12);
+      --title: #0369a1;
+      --tag-bg: #e0f2fe;
+      --tag-text: #0c4a6e;
     }
     body {
       margin: 0;
       padding: 2rem;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: var(--bg);
+      color: var(--text);
     }
     .container {
       max-width: 800px;
       margin: 0 auto;
-      background: #1e293b;
+      background: var(--card-bg);
       border-radius: 12px;
       padding: 2rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 10px 30px var(--card-shadow);
     }
     h1 {
       margin-top: 0;
-      color: #38bdf8;
+      color: var(--title);
     }
     p {
       line-height: 1.6;
@@ -35,20 +42,21 @@
       display: inline-block;
       padding: 0.35rem 0.7rem;
       border-radius: 999px;
-      background: #0ea5e9;
-      color: #082f49;
+      background: var(--tag-bg);
+      color: var(--tag-text);
       font-weight: bold;
       margin-right: 0.4rem;
       margin-bottom: 0.4rem;
     }
-    @media (prefers-color-scheme: light) {
-      body {
-        background: #f8fafc;
-        color: #0f172a;
-      }
-      .container {
-        background: #ffffff;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --text: #e2e8f0;
+        --card-bg: #1e293b;
+        --card-shadow: rgba(0, 0, 0, 0.3);
+        --title: #38bdf8;
+        --tag-bg: #0ea5e9;
+        --tag-text: #082f49;
       }
     }
   </style>
