@@ -1,2 +1,63 @@
-# Um--agente-de-IA
-E um Agente de IA para controla meus projetos em tempo real para atualizar todos os erros e configura todos os  sistemas do meus projetos
+# Um Agente de IA (RAG + Modelos Prontos)
+
+Projeto base para criar uma IA do zero com estrutura completa: sistemas, design, infraestrutura, segurança, código de conduta, licença, linguagem, bibliotecas, treinamento e avaliação.
+
+## Objetivo
+Construir um agente de IA modular para apoiar projetos em tempo real, usando **RAG** (Retrieval-Augmented Generation) e integração com **modelos prontos** (OpenAI, Azure OpenAI, Ollama, etc).
+
+## Stack (linguagem e bibliotecas)
+- **Linguagem:** Python 3.11+
+- **Bibliotecas padrão usadas no código atual:** `dataclasses`, `typing`, `json`, `pathlib`, `re`
+- **Modelos prontos:** via adapter (`ReadyModel`), permitindo trocar o provedor sem alterar o núcleo do agente
+
+## Estrutura
+```text
+src/
+  agent.py        # Núcleo RAG (ingestão, recuperação, prompt e resposta)
+  main.py         # Exemplo de execução via CLI
+  training.py     # Pipeline simples de preparo de dados
+  evaluation.py   # Métricas básicas de avaliação
+```
+
+## Design e arquitetura
+1. **Camada de conhecimento**: documentos em memória (`Document`) + índice simples.
+2. **Camada de recuperação**: `SimpleRetriever` por sobreposição de termos.
+3. **Camada de geração**: `ReadyModel` (interface) + implementação de exemplo (`EchoReadyModel`).
+4. **Orquestração RAG**: `RAGAgent.ask()` monta contexto + prompt + chamada ao modelo.
+
+## Infraestrutura sugerida
+- Executar localmente com Python.
+- Evolução natural:
+  - API REST (FastAPI)
+  - Banco vetorial (FAISS/Qdrant/pgvector)
+  - Observabilidade (OpenTelemetry + logs estruturados)
+  - CI/CD (lint/test/security scan)
+
+## Segurança
+- Ver `SECURITY.md`.
+- Práticas aplicadas neste baseline:
+  - separação entre recuperação e geração
+  - sanitização básica de texto antes de recuperação
+  - prompt com contexto controlado
+  - sem hardcode de segredos
+
+## Treinamento
+- `src/training.py` descreve base para curadoria, limpeza e split de dados.
+- Estratégia recomendada:
+  - usar fine-tuning somente quando necessário
+  - priorizar RAG para reduzir custo e risco de alucinação
+
+## Avaliação
+- `src/evaluation.py` inclui métricas iniciais:
+  - `exact_match`
+  - `context_recall`
+- Evoluir com avaliações humanas e testes de segurança (prompt injection e data leakage).
+
+## Como executar
+```bash
+python3 src/main.py
+```
+
+## Governança
+- **Código de Conduta:** `CODE_OF_CONDUCT.md`
+- **Licença:** `LICENSE`
