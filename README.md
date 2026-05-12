@@ -53,6 +53,13 @@ src/
   - `context_recall`
 - Evoluir com avaliações humanas e testes de segurança (prompt injection e data leakage).
 
+## Sistema de controle de projetos
+- `src/projects.py` adiciona um gerenciador de projetos com:
+  - cadastro e remoção de projetos
+  - atualização de status (`planejado`, `em_andamento`, `pausado`, `concluido`, `cancelado`)
+  - busca por nome/descrição
+  - perguntas ao agente com contexto dos projetos cadastrados
+
 ## Como executar
 ```bash
 python3 -m src.main
