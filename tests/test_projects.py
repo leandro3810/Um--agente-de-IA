@@ -4,7 +4,7 @@ from src.projects import Project, ProjectManager
 
 
 class ProjectManagerTests(unittest.TestCase):
-    def test_add_list_update_and_remove_project(self):
+    def test_add_and_list_projects(self):
         manager = ProjectManager()
         manager.add_project(Project("1", "Projeto Alpha", "Criar API", "planejado"))
         manager.add_project(Project("2", "Projeto Beta", "Criar dashboard", "em_andamento"))
@@ -12,10 +12,15 @@ class ProjectManagerTests(unittest.TestCase):
         self.assertEqual(len(manager.list_projects()), 2)
         self.assertEqual(len(manager.list_projects(status="em_andamento")), 1)
 
+    def test_update_project_status(self):
+        manager = ProjectManager([Project("1", "Projeto Alpha", "Criar API", "planejado")])
         updated = manager.update_status("1", "concluido")
         self.assertEqual(updated.status, "concluido")
         self.assertEqual(manager.get_project("1").status, "concluido")
 
+    def test_remove_project(self):
+        manager = ProjectManager([Project("1", "Projeto Alpha", "Criar API", "planejado")])
+        manager.add_project(Project("2", "Projeto Beta", "Criar dashboard", "em_andamento"))
         manager.remove_project("2")
         self.assertEqual(len(manager.list_projects()), 1)
 
@@ -44,6 +49,14 @@ class ProjectManagerTests(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             manager.add_project(Project("3", "Inválido", "Descrição", "desconhecido"))
+
+    def test_required_fields_validation(self):
+        with self.assertRaises(ValueError):
+            Project("", "Projeto", "Descrição", "planejado").validate()
+        with self.assertRaises(ValueError):
+            Project("1", " ", "Descrição", "planejado").validate()
+        with self.assertRaises(ValueError):
+            Project("1", "Projeto", " ", "planejado").validate()
 
 
 if __name__ == "__main__":

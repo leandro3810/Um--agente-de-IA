@@ -17,6 +17,12 @@ class Project:
     status: str = "planejado"
 
     def validate(self) -> None:
+        if not self.id.strip():
+            raise ValueError("id do projeto não pode ser vazio")
+        if not self.name.strip():
+            raise ValueError("nome do projeto não pode ser vazio")
+        if not self.description.strip():
+            raise ValueError("descrição do projeto não pode ser vazia")
         if self.status not in VALID_STATUSES:
             raise ValueError(f"status inválido: {self.status}")
 
