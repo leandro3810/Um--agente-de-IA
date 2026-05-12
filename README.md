@@ -65,6 +65,14 @@ src/
 python3 -m src.main
 ```
 
+## Página inicial
+- Foi adicionada uma página estática em `index.html`.
+- Para abrir localmente no navegador, execute um servidor local:
+```bash
+python3 -m http.server 8000
+```
+Depois acesse: `http://localhost:8000`
+
 ## Governança
 - **Código de Conduta:** `CODE_OF_CONDUCT.md`
 - **Licença:** `LICENSE`
