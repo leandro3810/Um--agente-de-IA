@@ -1,4 +1,4 @@
-from agent import Document, EchoReadyModel, RAGAgent, SimpleRetriever
+from src.agent import Document, EchoReadyModel, RAGAgent, SimpleRetriever
 
 
 def build_agent() -> RAGAgent:

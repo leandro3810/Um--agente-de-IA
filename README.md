@@ -55,7 +55,7 @@ src/
 
 ## Como executar
 ```bash
-python3 src/main.py
+python3 -m src.main
 ```
 
 ## Governança
