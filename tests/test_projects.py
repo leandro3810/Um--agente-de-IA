@@ -4,6 +4,20 @@ from src.projects import Project, ProjectManager
 
 
 class ProjectManagerTests(unittest.TestCase):
+    def test_build_agent_uses_explicit_model_even_if_falsy(self):
+        class FalsyModel:
+            def __bool__(self):
+                return False
+
+            def generate(self, prompt: str) -> str:
+                return "ok"
+
+        manager = ProjectManager([Project("1", "Projeto Alpha", "Criar API", "planejado")])
+        model = FalsyModel()
+
+        agent = manager.build_agent(model=model)
+        self.assertIs(agent.model, model)
+
     def test_add_and_list_projects(self):
         manager = ProjectManager()
         manager.add_project(Project("1", "Projeto Alpha", "Criar API", "planejado"))

@@ -84,7 +84,7 @@ class ProjectManager:
         ]
 
     def build_agent(self, model: ReadyModel | None = None) -> RAGAgent:
-        ready_model = model or EchoReadyModel()
+        ready_model = model if model is not None else EchoReadyModel()
         retriever = SimpleRetriever(self._to_documents())
         return RAGAgent(model=ready_model, retriever=retriever)
 
