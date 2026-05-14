@@ -35,7 +35,9 @@ class N8NWebhookModel:
     def __init__(self, webhook_url: str, timeout: float = 10.0, token: str | None = None) -> None:
         normalized_url = webhook_url.strip()
         if not normalized_url.startswith(("http://", "https://")):
-            raise ValueError("webhook_url do n8n precisa ser uma URL HTTP/HTTPS válida")
+            raise ValueError(
+                f"webhook_url do n8n precisa ser uma URL HTTP/HTTPS válida, recebido: {normalized_url}"
+            )
         self._webhook_url = normalized_url
         self._timeout = timeout
         self._token = token
@@ -51,7 +53,7 @@ class N8NWebhookModel:
             with urlopen(request, timeout=self._timeout) as response:
                 response_body = response.read().decode("utf-8")
         except URLError as exc:
-            raise RuntimeError("falha ao chamar webhook do n8n") from exc
+            raise RuntimeError(f"falha ao chamar webhook do n8n em {self._webhook_url}: {exc}") from exc
 
         if not response_body.strip():
             return ""

@@ -6,7 +6,7 @@ from src.agent import Document, EchoReadyModel, N8NWebhookModel, RAGAgent, Simpl
 
 
 class AgentTests(unittest.TestCase):
-    def test_n8n_webhook_model_calls_webhook_and_reads_response(self):
+    def test_n8n_webhook_model_success_response(self):
         model = N8NWebhookModel("https://example.com/webhook", token="abc123")
         with patch("src.agent.urlopen") as mock_urlopen:
             mock_urlopen.return_value.__enter__.return_value.read.return_value = b'{"response":"ok n8n"}'
@@ -23,8 +23,10 @@ class AgentTests(unittest.TestCase):
     def test_n8n_webhook_model_wraps_transport_errors(self):
         model = N8NWebhookModel("https://example.com/webhook")
         with patch("src.agent.urlopen", side_effect=URLError("offline")):
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(RuntimeError) as ctx:
                 model.generate("Teste")
+            self.assertIn("https://example.com/webhook", str(ctx.exception))
+            self.assertIsInstance(ctx.exception.__cause__, URLError)
 
     def test_retriever_returns_relevant_document(self):
         retriever = SimpleRetriever([
