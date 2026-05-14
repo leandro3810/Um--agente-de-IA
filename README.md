@@ -7,7 +7,7 @@ Construir um agente de IA modular para apoiar projetos em tempo real, usando **R
 
 ## Stack (linguagem e bibliotecas)
 - **Linguagem:** Python 3.11+
-- **Bibliotecas padrão usadas no código atual:** `dataclasses`, `typing`, `json`, `pathlib`, `re`
+- **Bibliotecas padrão usadas no código atual:** `dataclasses`, `typing`, `json`, `pathlib`, `re`, `urllib`
 - **Modelos prontos:** via adapter (`ReadyModel`), permitindo trocar o provedor sem alterar o núcleo do agente
 
 ## Estrutura
@@ -24,6 +24,20 @@ src/
 2. **Camada de recuperação**: `SimpleRetriever` por sobreposição de termos.
 3. **Camada de geração**: `ReadyModel` (interface) + implementação de exemplo (`EchoReadyModel`).
 4. **Orquestração RAG**: `RAGAgent.ask()` monta contexto + prompt + chamada ao modelo.
+
+## Integração com n8n
+- O projeto agora inclui `N8NWebhookModel` em `src/agent.py`.
+- Essa integração envia `{"prompt": "...texto..."}` para um webhook n8n via `POST` e usa o retorno para responder.
+- Campos de resposta priorizados no JSON retornado: `response`, `answer`, `text`, `output`.
+- Exemplo de uso:
+```python
+from src.agent import Document, N8NWebhookModel, RAGAgent, SimpleRetriever
+
+docs = [Document("1", "Contexto do projeto")]
+model = N8NWebhookModel("https://SEU_N8N/webhook/rota", token="SEU_TOKEN_OPCIONAL")
+agent = RAGAgent(model=model, retriever=SimpleRetriever(docs))
+print(agent.ask("Me atualize sobre o projeto"))
+```
 
 ## Infraestrutura sugerida
 - Executar localmente com Python.
