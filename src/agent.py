@@ -30,7 +30,7 @@ class EchoReadyModel:
 
 
 class N8NWebhookModel:
-    """Integração simples com workflows n8n via webhook HTTP."""
+    """Adapter ReadyModel que envia prompts para um workflow n8n via webhook HTTP."""
 
     def __init__(self, webhook_url: str, timeout: float = 10.0, token: str | None = None) -> None:
         normalized_url = webhook_url.strip()
@@ -66,6 +66,7 @@ class N8NWebhookModel:
                 value = parsed.get(key)
                 if isinstance(value, str):
                     return value
+            return json.dumps(parsed, ensure_ascii=False)
 
         return response_body
 

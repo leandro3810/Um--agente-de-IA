@@ -34,7 +34,10 @@ src/
 from src.agent import Document, N8NWebhookModel, RAGAgent, SimpleRetriever
 
 docs = [Document("1", "Contexto do projeto")]
-model = N8NWebhookModel("https://SEU_N8N/webhook/rota", token="SEU_TOKEN_OPCIONAL")
+model = N8NWebhookModel(
+    "https://n8n.example.com/webhook/rota",
+    token="SEU_TOKEN_OPCIONAL",  # opcional: use apenas se o webhook exigir autenticação
+)
 agent = RAGAgent(model=model, retriever=SimpleRetriever(docs))
 print(agent.ask("Me atualize sobre o projeto"))
 ```
