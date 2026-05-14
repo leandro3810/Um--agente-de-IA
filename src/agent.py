@@ -52,6 +52,8 @@ class N8NWebhookModel:
         try:
             with urlopen(request, timeout=self._timeout) as response:
                 charset = response.headers.get_content_charset("utf-8")
+                if not isinstance(charset, str):
+                    charset = "utf-8"
                 response_body = response.read().decode(charset)
         except URLError as exc:
             raise RuntimeError(f"falha ao chamar webhook do n8n em {self._webhook_url}: {exc}") from exc
