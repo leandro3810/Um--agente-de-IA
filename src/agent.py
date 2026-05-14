@@ -51,7 +51,8 @@ class N8NWebhookModel:
         request = Request(self._webhook_url, data=payload, headers=headers, method="POST")
         try:
             with urlopen(request, timeout=self._timeout) as response:
-                response_body = response.read().decode("utf-8")
+                charset = response.headers.get_content_charset("utf-8")
+                response_body = response.read().decode(charset)
         except URLError as exc:
             raise RuntimeError(f"falha ao chamar webhook do n8n em {self._webhook_url}: {exc}") from exc
 
