@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 from urllib.error import URLError
 
-from src.agent import Document, EchoReadyModel, N8NWebhookModel, RAGAgent, SimpleRetriever
+from src.agent import Document, EchoReadyModel, N8NWebhookModel, OpenAIModel, RAGAgent, SimpleRetriever
 
 
 class AgentTests(unittest.TestCase):
@@ -26,6 +26,31 @@ class AgentTests(unittest.TestCase):
             with self.assertRaises(RuntimeError) as ctx:
                 model.generate("Teste")
             self.assertIn("https://example.com/webhook", str(ctx.exception))
+            self.assertIsInstance(ctx.exception.__cause__, URLError)
+
+    def test_openai_model_success_response(self):
+        model = OpenAIModel("sk-test")
+        with patch("src.agent.urlopen") as mock_urlopen:
+            response = mock_urlopen.return_value.__enter__.return_value
+            response.read.return_value = b'{"choices":[{"message":{"content":"resposta openai"}}]}'
+            response.headers.get_content_charset.return_value = "utf-8"
+
+            answer = model.generate("Teste OpenAI")
+
+            self.assertEqual(answer, "resposta openai")
+            request = mock_urlopen.call_args.args[0]
+            self.assertEqual(request.full_url, "https://api.openai.com/v1/chat/completions")
+            self.assertEqual(request.get_method(), "POST")
+            self.assertEqual(request.headers["Authorization"], "Bearer sk-test")
+            self.assertIn(b'"model": "gpt-4o-mini"', request.data)
+            self.assertIn(b'"content": "Teste OpenAI"', request.data)
+
+    def test_openai_model_wraps_transport_errors(self):
+        model = OpenAIModel("sk-test")
+        with patch("src.agent.urlopen", side_effect=URLError("offline")):
+            with self.assertRaises(RuntimeError) as ctx:
+                model.generate("Teste")
+            self.assertIn("https://api.openai.com/v1/chat/completions", str(ctx.exception))
             self.assertIsInstance(ctx.exception.__cause__, URLError)
 
     def test_retriever_returns_relevant_document(self):

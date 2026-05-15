@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass, replace
 from typing import Iterable
 
@@ -10,11 +11,25 @@ VALID_STATUSES = {"planejado", "em_andamento", "pausado", "concluido", "cancelad
 
 
 @dataclass(frozen=True)
+class Task:
+    id: str
+    title: str
+    done: bool = False
+
+    def validate(self) -> None:
+        if not self.id.strip():
+            raise ValueError("id da tarefa não pode ser vazio")
+        if not self.title.strip():
+            raise ValueError("título da tarefa não pode ser vazio")
+
+
+@dataclass(frozen=True)
 class Project:
     id: str
     name: str
     description: str
     status: str = "planejado"
+    tasks: tuple[Task, ...] = ()
 
     def validate(self) -> None:
         if not self.id.strip():
@@ -25,6 +40,8 @@ class Project:
             raise ValueError("descrição do projeto não pode ser vazia")
         if self.status not in VALID_STATUSES:
             raise ValueError(f"status inválido: {self.status}")
+        for task in self.tasks:
+            task.validate()
 
 
 class ProjectManager:
@@ -64,6 +81,16 @@ class ProjectManager:
             raise KeyError(f"projeto não encontrado: {project_id}")
         del self._projects[project_id]
 
+    def add_task(self, project_id: str, task: Task) -> Project:
+        task.validate()
+        project = self.get_project(project_id)
+        updated = replace(project, tasks=project.tasks + (task,))
+        self._projects[project_id] = updated
+        return updated
+
+    def list_tasks(self, project_id: str) -> list[Task]:
+        return list(self.get_project(project_id).tasks)
+
     def search(self, term: str) -> list[Project]:
         normalized = term.strip().lower()
         if not normalized:
@@ -75,13 +102,38 @@ class ProjectManager:
         ]
 
     def _to_documents(self) -> list[Document]:
+        def format_tasks(project: Project) -> str:
+            if not project.tasks:
+                return "Sem tarefas."
+            items = [
+                f"{task.id}: {task.title} ({'concluída' if task.done else 'pendente'})"
+                for task in project.tasks
+            ]
+            return "Tarefas: " + "; ".join(items)
+
         return [
             Document(
                 project.id,
-                f"Projeto: {project.name}. Status: {project.status}. Descrição: {project.description}",
+                (
+                    f"Projeto: {project.name}. Status: {project.status}. "
+                    f"Descrição: {project.description}. {format_tasks(project)}"
+                ),
             )
             for project in self._projects.values()
         ]
+
+    def export_csv(self, filepath: str) -> None:
+        fieldnames = ["id", "name", "description", "status"]
+        with open(filepath, "w", newline="", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for project in self._projects.values():
+                writer.writerow({
+                    "id": project.id,
+                    "name": project.name,
+                    "description": project.description,
+                    "status": project.status,
+                })
 
     def build_agent(self, model: ReadyModel | None = None) -> RAGAgent:
         ready_model = model if model is not None else EchoReadyModel()
