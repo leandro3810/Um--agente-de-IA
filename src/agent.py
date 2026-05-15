@@ -76,6 +76,58 @@ class N8NWebhookModel:
         return response_body
 
 
+class OpenAIModel:
+    """Adapter ReadyModel para OpenAI Chat Completions API."""
+
+    def __init__(self, api_key: str, model: str = "gpt-4o-mini", timeout: float = 30.0) -> None:
+        normalized_key = api_key.strip()
+        if not normalized_key:
+            raise ValueError("api_key da OpenAI não pode ser vazia")
+        self._api_key = normalized_key
+        self._model = model
+        self._timeout = timeout
+        self._url = "https://api.openai.com/v1/chat/completions"
+
+    def generate(self, prompt: str) -> str:
+        payload = json.dumps({
+            "model": self._model,
+            "messages": [{"role": "user", "content": prompt}],
+        }).encode("utf-8")
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self._api_key}",
+        }
+        request = Request(self._url, data=payload, headers=headers, method="POST")
+
+        try:
+            with urlopen(request, timeout=self._timeout) as response:
+                charset = response.headers.get_content_charset("utf-8")
+                if not isinstance(charset, str):
+                    charset = "utf-8"
+                response_body = response.read().decode(charset)
+        except URLError as exc:
+            raise RuntimeError(f"falha ao chamar OpenAI em {self._url}: {exc}") from exc
+
+        try:
+            parsed = json.loads(response_body)
+        except json.JSONDecodeError:
+            return response_body
+
+        if isinstance(parsed, dict):
+            choices = parsed.get("choices")
+            if isinstance(choices, list) and choices:
+                first_choice = choices[0]
+                if isinstance(first_choice, dict):
+                    message = first_choice.get("message")
+                    if isinstance(message, dict):
+                        content = message.get("content")
+                        if isinstance(content, str):
+                            return content
+            return json.dumps(parsed, ensure_ascii=False)
+
+        return response_body
+
+
 class SimpleRetriever:
     def __init__(self, documents: Iterable[Document]) -> None:
         self._documents = list(documents)

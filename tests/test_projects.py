@@ -1,6 +1,9 @@
+import csv
+import os
+import tempfile
 import unittest
 
-from src.projects import Project, ProjectManager
+from src.projects import Project, ProjectManager, Task
 
 
 class ProjectManagerTests(unittest.TestCase):
@@ -50,6 +53,57 @@ class ProjectManagerTests(unittest.TestCase):
         answer = manager.ask("Qual projeto está em andamento?")
         self.assertIn("Projeto ERP", answer)
         self.assertIn("Status: em_andamento", answer)
+
+    def test_add_and_list_tasks(self):
+        manager = ProjectManager([Project("1", "Projeto ERP", "Automação financeira", "em_andamento")])
+        manager.add_task("1", Task("t1", "Mapear integrações"))
+        manager.add_task("1", Task("t2", "Publicar endpoint", done=True))
+
+        tasks = manager.list_tasks("1")
+        self.assertEqual(len(tasks), 2)
+        self.assertEqual(tasks[0].title, "Mapear integrações")
+        self.assertTrue(tasks[1].done)
+
+        answer = manager.ask("Qual tarefa é Publicar endpoint?")
+        self.assertIn("Publicar endpoint", answer)
+
+    def test_add_task_inexistent_project_raises(self):
+        manager = ProjectManager()
+        with self.assertRaises(KeyError):
+            manager.add_task("nao-existe", Task("t1", "Tarefa"))
+
+    def test_export_csv_with_projects(self):
+        manager = ProjectManager([
+            Project("1", "Projeto Alpha", "Criar API", "planejado"),
+            Project("2", "Projeto Beta", "Criar dashboard", "em_andamento"),
+        ])
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            temp_path = tmp.name
+        try:
+            manager.export_csv(temp_path)
+            with open(temp_path, newline="", encoding="utf-8") as csvfile:
+                rows = list(csv.DictReader(csvfile))
+
+            self.assertEqual(len(rows), 2)
+            self.assertEqual(rows[0]["id"], "1")
+            self.assertEqual(rows[0]["name"], "Projeto Alpha")
+            self.assertEqual(rows[1]["status"], "em_andamento")
+        finally:
+            os.remove(temp_path)
+
+    def test_export_csv_empty_manager_writes_only_header(self):
+        manager = ProjectManager()
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            temp_path = tmp.name
+        try:
+            manager.export_csv(temp_path)
+            with open(temp_path, newline="", encoding="utf-8") as csvfile:
+                reader = csv.DictReader(csvfile)
+                rows = list(reader)
+                self.assertEqual(rows, [])
+                self.assertEqual(reader.fieldnames, ["id", "name", "description", "status"])
+        finally:
+            os.remove(temp_path)
 
     def test_validation_errors(self):
         manager = ProjectManager()
