@@ -102,8 +102,6 @@ class OpenAIModel:
         try:
             with urlopen(request, timeout=self._timeout) as response:
                 charset = response.headers.get_content_charset("utf-8")
-                if not isinstance(charset, str):
-                    charset = "utf-8"
                 response_body = response.read().decode(charset)
         except URLError as exc:
             raise RuntimeError(f"falha ao chamar OpenAI em {self._url}: {exc}") from exc

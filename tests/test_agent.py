@@ -31,9 +31,9 @@ class AgentTests(unittest.TestCase):
     def test_openai_model_success_response(self):
         model = OpenAIModel("sk-test")
         with patch("src.agent.urlopen") as mock_urlopen:
-            mock_urlopen.return_value.__enter__.return_value.read.return_value = (
-                b'{"choices":[{"message":{"content":"resposta openai"}}]}'
-            )
+            response = mock_urlopen.return_value.__enter__.return_value
+            response.read.return_value = b'{"choices":[{"message":{"content":"resposta openai"}}]}'
+            response.headers.get_content_charset.return_value = "utf-8"
 
             answer = model.generate("Teste OpenAI")
 
