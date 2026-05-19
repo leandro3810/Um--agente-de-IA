@@ -8,74 +8,219 @@
   <style>
     :root {
       color-scheme: light dark;
-      font-family: Arial, sans-serif;
-      --bg: #f8fafc;
+      font-family: "Inter", Arial, sans-serif;
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-muted: #f8fafc;
       --text: #0f172a;
-      --card-bg: #ffffff;
-      --card-shadow: rgba(15, 23, 42, 0.12);
-      --title: #0369a1;
-      --tag-bg: #e0f2fe;
-      --tag-text: #0c4a6e;
+      --text-muted: #334155;
+      --primary: #0284c7;
+      --primary-strong: #0369a1;
+      --border: #e2e8f0;
+      --shadow: rgba(15, 23, 42, 0.08);
     }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      padding: 2rem;
       background: var(--bg);
       color: var(--text);
     }
+
     .container {
-      max-width: 800px;
+      max-width: 960px;
       margin: 0 auto;
-      background: var(--card-bg);
-      border-radius: 12px;
       padding: 2rem;
-      box-shadow: 0 10px 30px var(--card-shadow);
     }
-    h1 {
-      margin-top: 0;
-      color: var(--title);
+
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 12px 28px var(--shadow);
+      margin-bottom: 1.5rem;
     }
-    p {
-      line-height: 1.6;
+
+    .hero h1 {
+      margin: 0 0 0.75rem;
+      color: var(--primary-strong);
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      line-height: 1.2;
     }
+
+    .hero p {
+      margin: 0;
+      line-height: 1.7;
+      color: var(--text-muted);
+      max-width: 70ch;
+    }
+
+    .tags {
+      margin-top: 1.2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
     .tag {
       display: inline-block;
-      padding: 0.35rem 0.7rem;
+      padding: 0.4rem 0.75rem;
       border-radius: 999px;
-      background: var(--tag-bg);
-      color: var(--tag-text);
-      font-weight: bold;
-      margin-right: 0.4rem;
-      margin-bottom: 0.4rem;
+      background: rgba(2, 132, 199, 0.14);
+      color: var(--primary-strong);
+      border: 1px solid rgba(2, 132, 199, 0.35);
+      font-size: 0.92rem;
+      font-weight: 600;
     }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1rem;
+      box-shadow: 0 8px 22px var(--shadow);
+    }
+
+    .card h2 {
+      margin: 0 0 0.55rem;
+      font-size: 1.02rem;
+      color: var(--primary-strong);
+    }
+
+    .card p {
+      margin: 0;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .section {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .section h2 {
+      margin: 0 0 0.7rem;
+      font-size: 1.05rem;
+      color: var(--primary-strong);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+    }
+
+    .commands {
+      margin-top: 0.6rem;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    code {
+      display: block;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.65rem 0.8rem;
+      color: var(--text);
+      font-size: 0.9rem;
+      overflow-x: auto;
+    }
+
+    footer {
+      margin-top: 1.2rem;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0f172a;
+        --bg: #020617;
+        --surface: #0f172a;
+        --surface-muted: #111c30;
         --text: #e2e8f0;
-        --card-bg: #1e293b;
-        --card-shadow: rgba(0, 0, 0, 0.3);
-        --title: #38bdf8;
-        --tag-bg: #0ea5e9;
-        --tag-text: #f0f9ff;
+        --text-muted: #cbd5e1;
+        --primary: #38bdf8;
+        --primary-strong: #7dd3fc;
+        --border: #1e293b;
+        --shadow: rgba(0, 0, 0, 0.35);
+      }
+
+      .tag {
+        background: rgba(56, 189, 248, 0.2);
+        border-color: rgba(56, 189, 248, 0.45);
       }
     }
   </style>
 </head>
 <body>
   <main class="container">
-    <h1>Um Agente de IA</h1>
-    <p>
-      Página inicial do projeto de agente de IA com arquitetura RAG (Retrieval-Augmented Generation),
-      pronto para evoluir com API, banco vetorial e integrações com modelos prontos.
-    </p>
+    <section class="hero">
+      <h1>Um Agente de IA</h1>
+      <p>
+        Projeto modular com arquitetura RAG (Retrieval-Augmented Generation), integração com modelos prontos e base para evolução com API, banco vetorial e observabilidade.
+      </p>
+      <div class="tags">
+        <span class="tag">Python 3.11+</span>
+        <span class="tag">RAG</span>
+        <span class="tag">Modelos Prontos</span>
+        <span class="tag">n8n Webhook</span>
+        <span class="tag">Segurança</span>
+      </div>
+    </section>
 
-    <div>
-      <span class="tag">Python</span>
-      <span class="tag">RAG</span>
-      <span class="tag">Modelos Prontos</span>
-      <span class="tag">Segurança</span>
-    </div>
+    <section class="grid">
+      <article class="card">
+        <h2>Objetivo</h2>
+        <p>Construir um agente de IA para apoiar projetos em tempo real com recuperação de contexto e geração de respostas.</p>
+      </article>
+      <article class="card">
+        <h2>Arquitetura</h2>
+        <p>Camadas de conhecimento, recuperação e geração com orquestração no núcleo <strong>RAGAgent</strong>.</p>
+      </article>
+      <article class="card">
+        <h2>Evolução</h2>
+        <p>Pronto para crescer com API REST, banco vetorial, métricas de avaliação e integração de provedores de modelo.</p>
+      </article>
+    </section>
 
+    <section class="section">
+      <h2>Principais componentes</h2>
+      <ul>
+        <li><strong>src/agent.py</strong>: ingestão, recuperação e geração de resposta.</li>
+        <li><strong>src/training.py</strong>: pipeline básico de preparo de dados.</li>
+        <li><strong>src/evaluation.py</strong>: métricas iniciais de avaliação.</li>
+        <li><strong>src/projects.py</strong>: gerenciamento de projetos com status e busca.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>Como executar</h2>
+      <div class="commands">
+        <code>python3 -m src.main</code>
+        <code>python3 -m http.server 8000</code>
+      </div>
+    </section>
+
+    <footer>
+      Base inicial para um agente de IA seguro, modular e pronto para integração com provedores modernos.
+    </footer>
   </main>
 </body>
 </html>
