@@ -3,224 +3,851 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Página inicial do projeto Um Agente de IA com arquitetura RAG e integração com modelos prontos.">
+  <meta name="description" content="Um Agente de IA — projeto modular open-source com arquitetura RAG, integração com modelos prontos (OpenAI, n8n) e sistema de gerenciamento de projetos.">
+  <meta property="og:title" content="Um Agente de IA">
+  <meta property="og:description" content="Agente de IA modular com RAG, modelos prontos e gerenciamento de projetos. Python 3.11+.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://leandro3810.github.io/Um--agente-de-IA/">
   <title>Um Agente de IA</title>
   <style>
+    /* ── tokens ───────────────────────────────────────────────── */
     :root {
-      color-scheme: light dark;
-      font-family: "Inter", Arial, sans-serif;
-      --bg: #f1f5f9;
-      --surface: #ffffff;
-      --surface-muted: #f8fafc;
-      --text: #0f172a;
-      --text-muted: #334155;
-      --primary: #0284c7;
-      --primary-strong: #0369a1;
-      --border: #e2e8f0;
-      --shadow: rgba(15, 23, 42, 0.08);
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-
-    .hero {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: 0 12px 28px var(--shadow);
-      margin-bottom: 1.5rem;
-    }
-
-    .hero h1 {
-      margin: 0 0 0.75rem;
-      color: var(--primary-strong);
-      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
-      line-height: 1.2;
-    }
-
-    .hero p {
-      margin: 0;
-      line-height: 1.7;
-      color: var(--text-muted);
-      max-width: 70ch;
-    }
-
-    .tags {
-      margin-top: 1.2rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .tag {
-      display: inline-block;
-      padding: 0.4rem 0.75rem;
-      border-radius: 999px;
-      background: rgba(2, 132, 199, 0.14);
-      color: var(--primary-strong);
-      border: 1px solid rgba(2, 132, 199, 0.35);
-      font-size: 0.92rem;
-      font-weight: 600;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.1rem 1rem;
-      box-shadow: 0 8px 22px var(--shadow);
-    }
-
-    .card h2 {
-      margin: 0 0 0.55rem;
-      font-size: 1.02rem;
-      color: var(--primary-strong);
-    }
-
-    .card p {
-      margin: 0;
-      line-height: 1.6;
-      color: var(--text-muted);
-    }
-
-    .section {
-      background: var(--surface-muted);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.1rem 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .section h2 {
-      margin: 0 0 0.7rem;
-      font-size: 1.05rem;
-      color: var(--primary-strong);
-    }
-
-    ul {
-      margin: 0;
-      padding-left: 1.2rem;
-      line-height: 1.7;
-      color: var(--text-muted);
-    }
-
-    .commands {
-      margin-top: 0.6rem;
-      display: grid;
-      gap: 0.6rem;
-    }
-
-    code {
-      display: block;
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.65rem 0.8rem;
-      color: var(--text);
-      font-size: 0.9rem;
-      overflow-x: auto;
-    }
-
-    footer {
-      margin-top: 1.2rem;
-      color: var(--text-muted);
-      font-size: 0.92rem;
+      --bg:             #f1f5f9;
+      --surface:        #ffffff;
+      --surface-alt:    #f8fafc;
+      --surface-code:   #0f172a;
+      --text:           #0f172a;
+      --text-muted:     #475569;
+      --primary:        #0284c7;
+      --primary-dark:   #0369a1;
+      --accent:         #7c3aed;
+      --green:          #16a34a;
+      --border:         #e2e8f0;
+      --shadow-sm:      0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.05);
+      --shadow-md:      0 4px 12px rgba(15,23,42,.10), 0 2px 6px rgba(15,23,42,.06);
+      --shadow-lg:      0 12px 30px rgba(15,23,42,.12), 0 4px 10px rgba(15,23,42,.07);
+      --radius-sm:      8px;
+      --radius-md:      14px;
+      --radius-lg:      20px;
+      font-family: "Inter", system-ui, -apple-system, Arial, sans-serif;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #020617;
-        --surface: #0f172a;
-        --surface-muted: #111c30;
-        --text: #e2e8f0;
-        --text-muted: #cbd5e1;
-        --primary: #38bdf8;
-        --primary-strong: #7dd3fc;
-        --border: #1e293b;
-        --shadow: rgba(0, 0, 0, 0.35);
+        --bg:           #020617;
+        --surface:      #0f172a;
+        --surface-alt:  #111c30;
+        --surface-code: #020617;
+        --text:         #e2e8f0;
+        --text-muted:   #94a3b8;
+        --primary:      #38bdf8;
+        --primary-dark: #7dd3fc;
+        --accent:       #a78bfa;
+        --green:        #4ade80;
+        --border:       #1e293b;
+        --shadow-sm:    0 1px 3px rgba(0,0,0,.30);
+        --shadow-md:    0 4px 12px rgba(0,0,0,.40);
+        --shadow-lg:    0 12px 30px rgba(0,0,0,.50);
       }
+    }
 
-      .tag {
-        background: rgba(56, 189, 248, 0.2);
-        border-color: rgba(56, 189, 248, 0.45);
+    /* ── reset ────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.6; }
+    a { color: var(--primary-dark); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ul { margin: 0; padding: 0; list-style: none; }
+
+    /* ── layout ───────────────────────────────────────────────── */
+    .container { max-width: 1020px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ── nav ──────────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    nav .inner {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text);
+    }
+    .nav-brand svg { flex-shrink: 0; }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .nav-links a {
+      padding: 0.35rem 0.7rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      transition: background .15s, color .15s;
+    }
+    .nav-links a:hover { background: var(--surface-alt); color: var(--text); text-decoration: none; }
+    .btn-gh {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-sm);
+      background: var(--text);
+      color: var(--bg) !important;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: opacity .15s;
+    }
+    .btn-gh:hover { opacity: .8; text-decoration: none; }
+
+    /* ── hero ─────────────────────────────────────────────────── */
+    .hero {
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      background: linear-gradient(160deg, var(--bg) 0%, var(--surface-alt) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(2,132,199,.12);
+      border: 1px solid rgba(2,132,199,.3);
+      color: var(--primary-dark);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .hero-eyebrow {
+        background: rgba(56,189,248,.15);
+        border-color: rgba(56,189,248,.35);
       }
+    }
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text);
+    }
+    .hero h1 span { color: var(--primary-dark); }
+    .hero-desc {
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.7;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+    .btn-primary {
+      padding: 0.7rem 1.4rem;
+      border-radius: var(--radius-sm);
+      background: var(--primary-dark);
+      color: #fff !important;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+      transition: background .15s, box-shadow .15s;
+    }
+    .btn-primary:hover { background: var(--primary); box-shadow: var(--shadow-md); text-decoration: none; }
+    .btn-outline {
+      padding: 0.7rem 1.4rem;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text) !important;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .15s;
+    }
+    .btn-outline:hover { box-shadow: var(--shadow-md); text-decoration: none; }
+    .hero-tags {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ── sections generic ─────────────────────────────────────── */
+    section { padding: 4rem 1.5rem; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--primary-dark);
+      margin-bottom: 0.5rem;
+    }
+    .section-title {
+      margin: 0 0 0.75rem;
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .section-desc {
+      max-width: 560px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    /* ── feature cards ────────────────────────────────────────── */
+    .cards-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .2s, transform .2s;
+    }
+    .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: rgba(2,132,199,.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      .card-icon { background: rgba(56,189,248,.12); }
+    }
+    .card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .card p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.93rem;
+      line-height: 1.6;
+    }
+
+    /* ── architecture diagram ─────────────────────────────────── */
+    .arch-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 640px) { .arch-grid { grid-template-columns: 1fr; } }
+    .arch-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .arch-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-dark);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .arch-item h3 { margin: 0 0 0.3rem; font-size: 0.97rem; font-weight: 700; }
+    .arch-item p { margin: 0; color: var(--text-muted); font-size: 0.9rem; line-height: 1.55; }
+
+    /* ── code block ───────────────────────────────────────────── */
+    .code-tabs {
+      margin-top: 2.5rem;
+    }
+    .tab-bar {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: -1px;
+    }
+    .tab-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      background: var(--surface-alt);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .tab-btn.active { background: var(--surface-code); color: #e2e8f0; border-color: var(--surface-code); }
+    .code-panel {
+      display: none;
+      background: var(--surface-code);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) var(--radius-sm);
+      overflow-x: auto;
+    }
+    .code-panel.active { display: block; }
+    .code-panel pre {
+      margin: 0;
+      padding: 1.5rem;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      font-family: "Fira Code", "Cascadia Code", Consolas, monospace;
+      color: #e2e8f0;
+      tab-size: 4;
+      white-space: pre;
+    }
+    .kw  { color: #f472b6; }   /* keyword */
+    .fn  { color: #60a5fa; }   /* function */
+    .st  { color: #86efac; }   /* string */
+    .cm  { color: #64748b; }   /* comment */
+    .num { color: #fbbf24; }   /* number */
+
+    /* ── integrations ─────────────────────────────────────────── */
+    .int-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .int-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .int-card .badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    .badge-n8n   { background: rgba(234,88,12,.12); color: #c2410c; border: 1px solid rgba(234,88,12,.3); }
+    .badge-openai{ background: rgba(22,163,74,.12);  color: var(--green); border: 1px solid rgba(22,163,74,.3); }
+    .badge-echo  { background: rgba(124,58,237,.12); color: var(--accent); border: 1px solid rgba(124,58,237,.3); }
+    @media (prefers-color-scheme: dark) {
+      .badge-n8n    { background: rgba(234,88,12,.2); color: #fb923c; }
+      .badge-openai { background: rgba(22,163,74,.2); color: #4ade80; }
+      .badge-echo   { background: rgba(124,58,237,.2); color: #c4b5fd; }
+    }
+    .int-card h3 { margin: 0 0 0.5rem; font-size: 1rem; font-weight: 700; }
+    .int-card p  { margin: 0; color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; }
+
+    /* ── file tree ────────────────────────────────────────────── */
+    .tree {
+      margin-top: 1.5rem;
+      background: var(--surface-code);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      font-family: "Fira Code", Consolas, monospace;
+      font-size: 0.88rem;
+      line-height: 2;
+      color: #cbd5e1;
+      overflow-x: auto;
+    }
+    .tree .dir  { color: #7dd3fc; }
+    .tree .file { color: #e2e8f0; }
+    .tree .note { color: #64748b; }
+
+    /* ── security & governance ────────────────────────────────── */
+    .pill-list {
+      margin-top: 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      box-shadow: var(--shadow-sm);
+    }
+    .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+    /* ── getting started ──────────────────────────────────────── */
+    .steps {
+      margin-top: 2rem;
+      display: grid;
+      gap: 0.75rem;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.1rem 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .step-num {
+      flex-shrink: 0;
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary-dark);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-body strong { display: block; font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .step-body code {
+      display: inline-block;
+      background: var(--surface-code);
+      color: #86efac;
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.88rem;
+      font-family: "Fira Code", Consolas, monospace;
+    }
+
+    /* ── footer ───────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      background: var(--surface);
+    }
+    footer .inner {
+      max-width: 1020px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .footer-brand { font-weight: 700; font-size: 0.95rem; }
+    .footer-links { display: flex; gap: 1.25rem; }
+    .footer-links a { font-size: 0.88rem; color: var(--text-muted); }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 0.83rem; color: var(--text-muted); }
+
+    /* ── responsive ───────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      .nav-links { display: none; }
+      .hero { padding: 3.5rem 1rem 3rem; }
+      section { padding: 3rem 1rem; }
     }
   </style>
 </head>
 <body>
-  <main class="container">
-    <section class="hero">
-      <h1>Um Agente de IA</h1>
-      <p>
-        Projeto modular com arquitetura RAG (Retrieval-Augmented Generation), integração com modelos prontos e base para evolução com API, banco vetorial e observabilidade.
-      </p>
-      <div class="tags">
-        <span class="tag">Python 3.11+</span>
-        <span class="tag">RAG</span>
-        <span class="tag">Modelos Prontos</span>
-        <span class="tag">n8n Webhook</span>
-        <span class="tag">Segurança</span>
+
+  <!-- ── NAV ─────────────────────────────────────────────────── -->
+  <nav>
+    <div class="inner">
+      <a class="nav-brand" href="#" style="text-decoration:none">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/>
+        </svg>
+        Um Agente de IA
+      </a>
+      <div class="nav-links">
+        <a href="#funcionalidades">Funcionalidades</a>
+        <a href="#arquitetura">Arquitetura</a>
+        <a href="#codigo">Código</a>
+        <a href="#integracoes">Integrações</a>
+        <a href="#inicio">Como Usar</a>
       </div>
-    </section>
+      <a class="btn-gh" href="https://github.com/leandro3810/Um--agente-de-IA" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.32c-2.22.48-2.69-1.07-2.69-1.07-.36-.92-.88-1.17-.88-1.17-.72-.49.05-.48.05-.48.8.06 1.22.82 1.22.82.71 1.22 1.86.87 2.31.66.07-.52.28-.87.5-1.07-1.77-.2-3.64-.89-3.64-3.95 0-.87.31-1.58.82-2.14-.08-.2-.36-1.01.08-2.11 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.91.08 2.11.51.56.82 1.27.82 2.14 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.19c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </nav>
 
-    <section class="grid">
-      <article class="card">
-        <h2>Objetivo</h2>
-        <p>Construir um agente de IA para apoiar projetos em tempo real com recuperação de contexto e geração de respostas.</p>
-      </article>
-      <article class="card">
-        <h2>Arquitetura</h2>
-        <p>Camadas de conhecimento, recuperação e geração com orquestração no núcleo <strong>RAGAgent</strong>.</p>
-      </article>
-      <article class="card">
-        <h2>Evolução</h2>
-        <p>Pronto para crescer com API REST, banco vetorial, métricas de avaliação e integração de provedores de modelo.</p>
-      </article>
-    </section>
+  <!-- ── HERO ─────────────────────────────────────────────────── -->
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      Projeto Open Source · Python 3.11+
+    </div>
+    <h1>Um <span>Agente de IA</span><br>modular e seguro</h1>
+    <p class="hero-desc">
+      Construído com arquitetura <strong>RAG</strong> (Retrieval-Augmented Generation),
+      integração plug-and-play com modelos prontos e base sólida para evoluir com API REST,
+      banco vetorial e observabilidade.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#inicio">Começar agora</a>
+      <a class="btn-outline" href="https://github.com/leandro3810/Um--agente-de-IA" target="_blank" rel="noopener">Ver no GitHub</a>
+    </div>
+    <div class="hero-tags">
+      <span class="tag">🐍 Python 3.11+</span>
+      <span class="tag">🔍 RAG</span>
+      <span class="tag">🤖 Modelos Prontos</span>
+      <span class="tag">🔗 n8n Webhook</span>
+      <span class="tag">🧠 OpenAI</span>
+      <span class="tag">🛡️ Segurança</span>
+      <span class="tag">📋 Gestão de Projetos</span>
+    </div>
+  </div>
 
-    <section class="section">
-      <h2>Principais componentes</h2>
-      <ul>
-        <li><strong>src/agent.py</strong>: ingestão, recuperação e geração de resposta.</li>
-        <li><strong>src/training.py</strong>: pipeline básico de preparo de dados.</li>
-        <li><strong>src/evaluation.py</strong>: métricas iniciais de avaliação.</li>
-        <li><strong>src/projects.py</strong>: gerenciamento de projetos com status e busca.</li>
-      </ul>
-    </section>
-
-    <section class="section">
-      <h2>Como executar</h2>
-      <div class="commands">
-        <code>python3 -m src.main</code>
-        <code>python3 -m http.server 8000</code>
+  <!-- ── FUNCIONALIDADES ───────────────────────────────────────── -->
+  <section id="funcionalidades">
+    <div class="container">
+      <span class="section-label">Funcionalidades</span>
+      <h2 class="section-title">Tudo que você precisa para um agente de IA de produção</h2>
+      <p class="section-desc">Do núcleo RAG ao gerenciamento de projetos — cada módulo foi pensado para crescer com sua necessidade.</p>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon">🔍</div>
+          <h3>Recuperação contextual (RAG)</h3>
+          <p>Recuperação por sobreposição de termos com <code style="font-size:0.82rem;background:var(--surface-alt);padding:.1rem .4rem;border-radius:4px">SimpleRetriever</code>. Fácil de trocar por FAISS, Qdrant ou pgvector.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🤖</div>
+          <h3>Modelos plug-and-play</h3>
+          <p>Interface <code style="font-size:0.82rem;background:var(--surface-alt);padding:.1rem .4rem;border-radius:4px">ReadyModel</code> desacopla o núcleo do provedor. Troque OpenAI, n8n ou qualquer API sem alterar o agente.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📋</div>
+          <h3>Gestão de projetos</h3>
+          <p>Cadastre, atualize e busque projetos com status e tarefas. Pergunte ao agente com contexto dos seus projetos.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <h3>Treinamento e avaliação</h3>
+          <p>Pipeline de preparo de dados e métricas (<em>exact match</em>, <em>context recall</em>) para acompanhar a qualidade do agente.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🛡️</div>
+          <h3>Segurança nativa</h3>
+          <p>Sanitização de texto, prompt com contexto controlado, sem hardcode de segredos e separação clara entre recuperação e geração.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🚀</div>
+          <h3>Pronto para evoluir</h3>
+          <p>Estrutura preparada para API REST (FastAPI), banco vetorial, observabilidade com OpenTelemetry e CI/CD.</p>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <footer>
-      Base inicial para um agente de IA seguro, modular e pronto para integração com provedores modernos.
-    </footer>
-  </main>
+  <!-- ── ARQUITETURA ───────────────────────────────────────────── -->
+  <section id="arquitetura">
+    <div class="container">
+      <span class="section-label">Arquitetura</span>
+      <h2 class="section-title">Camadas bem definidas, fáceis de estender</h2>
+      <p class="section-desc">Quatro camadas ortogonais garantem que você possa trocar qualquer peça sem quebrar o restante.</p>
+      <div class="arch-grid">
+        <div class="arch-item">
+          <div class="arch-num">1</div>
+          <div>
+            <h3>Camada de conhecimento</h3>
+            <p>Documentos em memória via <strong>Document</strong>. Substituível por qualquer banco vetorial.</p>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="arch-num">2</div>
+          <div>
+            <h3>Camada de recuperação</h3>
+            <p><strong>SimpleRetriever</strong> por sobreposição de termos. Interface aberta para dense retrieval.</p>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="arch-num">3</div>
+          <div>
+            <h3>Camada de geração</h3>
+            <p><strong>ReadyModel</strong> (Protocol) + adaptadores concretos: <em>EchoReadyModel</em>, <em>N8NWebhookModel</em>, <em>OpenAIModel</em>.</p>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="arch-num">4</div>
+          <div>
+            <h3>Orquestração RAG</h3>
+            <p><strong>RAGAgent.ask()</strong> une recuperação + montagem de prompt + chamada ao modelo.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tree" role="img" aria-label="Estrutura de arquivos do projeto">
+        <span class="dir">src/</span><br>
+        &nbsp;&nbsp;├─ <span class="file">agent.py</span>      <span class="note"># RAGAgent · SimpleRetriever · modelos</span><br>
+        &nbsp;&nbsp;├─ <span class="file">main.py</span>       <span class="note"># execução via CLI</span><br>
+        &nbsp;&nbsp;├─ <span class="file">training.py</span>   <span class="note"># curadoria e split de dados</span><br>
+        &nbsp;&nbsp;├─ <span class="file">evaluation.py</span> <span class="note"># exact_match · context_recall</span><br>
+        &nbsp;&nbsp;└─ <span class="file">projects.py</span>   <span class="note"># ProjectManager · Task · status</span><br>
+        <span class="dir">tests/</span><br>
+        &nbsp;&nbsp;├─ <span class="file">test_agent.py</span><br>
+        &nbsp;&nbsp;├─ <span class="file">test_projects.py</span><br>
+        &nbsp;&nbsp;└─ <span class="file">test_training_evaluation.py</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CÓDIGO ────────────────────────────────────────────────── -->
+  <section id="codigo">
+    <div class="container">
+      <span class="section-label">Exemplos de código</span>
+      <h2 class="section-title">Simples de usar, fácil de adaptar</h2>
+      <p class="section-desc">Veja como criar um agente, integrar modelos e gerenciar projetos em poucos minutos.</p>
+      <div class="code-tabs">
+        <div class="tab-bar" role="tablist">
+          <button class="tab-btn active" role="tab" aria-selected="true" data-tab="basic" onclick="switchTab(event,'basic')">Agente básico</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="n8n" onclick="switchTab(event,'n8n')">n8n Webhook</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="openai" onclick="switchTab(event,'openai')">OpenAI</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="projects" onclick="switchTab(event,'projects')">Projetos</button>
+        </div>
+        <div id="tab-basic" class="code-panel active" role="tabpanel">
+          <pre><span class="kw">from</span> src.agent <span class="kw">import</span> Document, EchoReadyModel, RAGAgent, SimpleRetriever
+
+<span class="cm"># 1. Documentos de conhecimento</span>
+docs = [
+    Document(<span class="st">"1"</span>, <span class="st">"O projeto usa arquitetura RAG para recuperar contexto."</span>),
+    Document(<span class="st">"2"</span>, <span class="st">"A geração é feita por um ReadyModel plugável."</span>),
+]
+
+<span class="cm"># 2. Monte o agente</span>
+agent = <span class="fn">RAGAgent</span>(
+    model=<span class="fn">EchoReadyModel</span>(),
+    retriever=<span class="fn">SimpleRetriever</span>(docs),
+)
+
+<span class="cm"># 3. Faça uma pergunta</span>
+resposta = agent.<span class="fn">ask</span>(<span class="st">"Como funciona a recuperação de contexto?"</span>)
+<span class="fn">print</span>(resposta)</pre>
+        </div>
+        <div id="tab-n8n" class="code-panel" role="tabpanel">
+          <pre><span class="kw">from</span> src.agent <span class="kw">import</span> Document, N8NWebhookModel, RAGAgent, SimpleRetriever
+
+docs = [Document(<span class="st">"1"</span>, <span class="st">"Contexto do seu projeto aqui."</span>)]
+
+<span class="cm"># Aponte para o webhook do seu workflow n8n</span>
+model = <span class="fn">N8NWebhookModel</span>(
+    <span class="st">"https://n8n.example.com/webhook/minha-rota"</span>,
+    token=<span class="st">"SEU_TOKEN_OPCIONAL"</span>,  <span class="cm"># omita se não usar autenticação</span>
+)
+
+agent = <span class="fn">RAGAgent</span>(model=model, retriever=<span class="fn">SimpleRetriever</span>(docs))
+<span class="fn">print</span>(agent.<span class="fn">ask</span>(<span class="st">"Me atualize sobre o projeto"</span>))</pre>
+        </div>
+        <div id="tab-openai" class="code-panel" role="tabpanel">
+          <pre><span class="kw">import</span> os
+<span class="kw">from</span> src.agent <span class="kw">import</span> Document, OpenAIModel, RAGAgent, SimpleRetriever
+
+docs = [Document(<span class="st">"1"</span>, <span class="st">"Seu documento de conhecimento."</span>)]
+
+<span class="cm"># A chave é lida da variável de ambiente — nunca hardcode!</span>
+model = <span class="fn">OpenAIModel</span>(
+    api_key=os.environ[<span class="st">"OPENAI_API_KEY"</span>],
+    model=<span class="st">"gpt-4o-mini"</span>,
+)
+
+agent = <span class="fn">RAGAgent</span>(model=model, retriever=<span class="fn">SimpleRetriever</span>(docs))
+<span class="fn">print</span>(agent.<span class="fn">ask</span>(<span class="st">"Explique o conteúdo do documento"</span>))</pre>
+        </div>
+        <div id="tab-projects" class="code-panel" role="tabpanel">
+          <pre><span class="kw">from</span> src.projects <span class="kw">import</span> Project, ProjectManager, Task
+
+pm = <span class="fn">ProjectManager</span>()
+
+<span class="cm"># Cadastre um projeto</span>
+pm.<span class="fn">add_project</span>(<span class="fn">Project</span>(
+    id=<span class="st">"api-v2"</span>,
+    name=<span class="st">"API v2"</span>,
+    description=<span class="st">"Migração para FastAPI com autenticação JWT"</span>,
+    status=<span class="st">"em_andamento"</span>,
+))
+
+<span class="cm"># Adicione tarefas</span>
+pm.<span class="fn">add_task</span>(<span class="st">"api-v2"</span>, <span class="fn">Task</span>(id=<span class="st">"t1"</span>, title=<span class="st">"Criar endpoints REST"</span>))
+
+<span class="cm"># Pergunte ao agente com contexto dos projetos</span>
+resposta = pm.<span class="fn">ask</span>(<span class="st">"Qual o status da API v2?"</span>)
+<span class="fn">print</span>(resposta)</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INTEGRAÇÕES ───────────────────────────────────────────── -->
+  <section id="integracoes">
+    <div class="container">
+      <span class="section-label">Integrações</span>
+      <h2 class="section-title">Troque o modelo sem tocar no agente</h2>
+      <p class="section-desc">O protocolo <strong>ReadyModel</strong> desacopla completamente a geração do restante da pipeline.</p>
+      <div class="int-grid">
+        <div class="int-card">
+          <span class="badge badge-echo">Built-in</span>
+          <h3>EchoReadyModel</h3>
+          <p>Modelo de exemplo que ecoa o prompt recebido. Ideal para testes e desenvolvimento local sem dependências externas.</p>
+        </div>
+        <div class="int-card">
+          <span class="badge badge-n8n">n8n</span>
+          <h3>N8NWebhookModel</h3>
+          <p>Envia o prompt para um workflow n8n via <code style="font-size:0.82rem;background:var(--surface-alt);padding:.1rem .4rem;border-radius:4px">POST</code> e retorna a resposta. Suporta autenticação Bearer token.</p>
+        </div>
+        <div class="int-card">
+          <span class="badge badge-openai">OpenAI</span>
+          <h3>OpenAIModel</h3>
+          <p>Integração direta com a API de Chat Completions da OpenAI. Configurável por modelo (padrão: <em>gpt-4o-mini</em>) e timeout.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SEGURANÇA ─────────────────────────────────────────────── -->
+  <section id="seguranca">
+    <div class="container">
+      <span class="section-label">Segurança &amp; Governança</span>
+      <h2 class="section-title">Seguro por padrão, governado desde o início</h2>
+      <p class="section-desc">Boas práticas de segurança são parte da estrutura base, não um opcional.</p>
+      <div class="pill-list">
+        <span class="pill"><span class="dot"></span>Separação recuperação / geração</span>
+        <span class="pill"><span class="dot"></span>Sanitização de texto na recuperação</span>
+        <span class="pill"><span class="dot"></span>Prompt com contexto controlado</span>
+        <span class="pill"><span class="dot"></span>Sem hardcode de segredos</span>
+        <span class="pill"><span class="dot"></span>Código de Conduta (CODE_OF_CONDUCT)</span>
+        <span class="pill"><span class="dot"></span>Política de segurança (SECURITY.md)</span>
+        <span class="pill"><span class="dot"></span>Licença MIT</span>
+        <span class="pill"><span class="dot"></span>CI com testes automáticos</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── COMO USAR ─────────────────────────────────────────────── -->
+  <section id="inicio">
+    <div class="container">
+      <span class="section-label">Como usar</span>
+      <h2 class="section-title">Pronto em menos de 2 minutos</h2>
+      <p class="section-desc">Não há dependências externas obrigatórias — só Python 3.11+.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <strong>Clone o repositório</strong>
+            <code>git clone https://github.com/leandro3810/Um--agente-de-IA.git &amp;&amp; cd Um--agente-de-IA</code>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <strong>Execute o agente de exemplo</strong>
+            <code>python3 -m src.main</code>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <strong>Rode os testes</strong>
+            <code>python3 -m unittest discover -s tests -p 'test_*.py'</code>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <strong>Abra esta página localmente</strong>
+            <code>python3 -m http.server 8000</code>
+            &nbsp;<span style="font-size:.88rem;color:var(--text-muted)">→ acesse http://localhost:8000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ────────────────────────────────────────────────── -->
+  <footer>
+    <div class="inner">
+      <div>
+        <div class="footer-brand">Um Agente de IA</div>
+        <div class="footer-copy" style="margin-top:.25rem">Base modular open-source para agentes de IA com RAG.</div>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/leandro3810/Um--agente-de-IA" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/leandro3810/Um--agente-de-IA/blob/main/LICENSE" target="_blank" rel="noopener">Licença</a>
+        <a href="https://github.com/leandro3810/Um--agente-de-IA/blob/main/SECURITY.md" target="_blank" rel="noopener">Segurança</a>
+        <a href="https://github.com/leandro3810/Um--agente-de-IA/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noopener">Conduta</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function switchTab(event, tabId) {
+      document.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.code-panel').forEach(function(panel) {
+        panel.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      event.currentTarget.setAttribute('aria-selected', 'true');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+  </script>
 </body>
 </html>
