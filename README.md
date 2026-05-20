@@ -95,7 +95,7 @@ aws configure
 pip install -r requirements.txt
 ```
 
-
+## Infraestrutura sugerida
 - Executar localmente com Python.
 - Evolução natural:
   - API REST (FastAPI)
