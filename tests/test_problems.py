@@ -4,7 +4,7 @@ from src.problems import Problem, ProblemManager
 
 
 class ProblemManagerTests(unittest.TestCase):
-    def test_add_list_update_and_remove_problem(self):
+    def test_add_and_list_problems(self):
         manager = ProblemManager()
         manager.add_problem(Problem("pr1", "Erro de login", "Falha ao autenticar", "alta"))
         manager.add_problem(Problem("pr2", "Lentidão no dashboard", "Consulta pesada", "media"))
@@ -12,14 +12,21 @@ class ProblemManagerTests(unittest.TestCase):
         self.assertEqual(len(manager.list_problems()), 2)
         self.assertEqual(len(manager.list_problems(severity="alta")), 1)
 
+    def test_update_problem_status(self):
+        manager = ProblemManager([Problem("pr1", "Erro de login", "Falha ao autenticar", "alta")])
         updated = manager.update_status("pr1", "investigando")
         self.assertEqual(updated.status, "investigando")
         self.assertEqual(manager.get_problem("pr1").status, "investigando")
 
+    def test_remove_problem(self):
+        manager = ProblemManager([
+            Problem("pr1", "Erro de login", "Falha ao autenticar", "alta"),
+            Problem("pr2", "Lentidão no dashboard", "Consulta pesada", "media"),
+        ])
         manager.remove_problem("pr2")
         self.assertEqual(len(manager.list_problems()), 1)
 
-    def test_search_and_ask(self):
+    def test_search_problems(self):
         manager = ProblemManager([
             Problem("pr1", "Erro de login", "Falha ao autenticar no portal", "alta"),
             Problem("pr2", "Timeout API", "Resposta lenta na API de pedidos", "critica"),
@@ -29,6 +36,11 @@ class ProblemManagerTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].id, "pr1")
 
+    def test_ask_problem_context(self):
+        manager = ProblemManager([
+            Problem("pr1", "Erro de login", "Falha ao autenticar no portal", "alta"),
+            Problem("pr2", "Timeout API", "Resposta lenta na API de pedidos", "critica"),
+        ])
         answer = manager.ask("Qual problema é crítico?")
         self.assertIn("Timeout API", answer)
         self.assertIn("Severidade: critica", answer)
