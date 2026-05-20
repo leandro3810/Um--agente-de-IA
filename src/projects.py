@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import csv
+import io
 from dataclasses import dataclass, replace
 from typing import Iterable
 
 from src.agent import Document, EchoReadyModel, RAGAgent, ReadyModel, SimpleRetriever
+
+try:
+    import boto3
+except ImportError:  # pragma: no cover
+    boto3 = None  # type: ignore[assignment]
 
 
 VALID_STATUSES = {"planejado", "em_andamento", "pausado", "concluido", "cancelado"}
@@ -134,6 +140,54 @@ class ProjectManager:
                     "description": project.description,
                     "status": project.status,
                 })
+
+    def export_csv_s3(self, bucket: str, key: str, region_name: str | None = None) -> None:
+        """Exporta projetos como CSV para um bucket do Amazon S3."""
+        if boto3 is None:
+            raise ImportError(
+                "boto3 é necessário para export_csv_s3. Instale com: pip install boto3"
+            )
+        fieldnames = ["id", "name", "description", "status"]
+        buffer = io.StringIO()
+        writer = csv.DictWriter(buffer, fieldnames=fieldnames)
+        writer.writeheader()
+        for project in self._projects.values():
+            writer.writerow({
+                "id": project.id,
+                "name": project.name,
+                "description": project.description,
+                "status": project.status,
+            })
+        s3 = boto3.client("s3", region_name=region_name)
+        s3.put_object(
+            Bucket=bucket,
+            Key=key,
+            Body=buffer.getvalue().encode("utf-8"),
+            ContentType="text/csv",
+        )
+
+    def import_csv_s3(self, bucket: str, key: str, region_name: str | None = None) -> None:
+        """Importa projetos de um CSV armazenado em um bucket do Amazon S3.
+
+        Projetos cujo ``id`` já existe no gerenciador são ignorados.
+        """
+        if boto3 is None:
+            raise ImportError(
+                "boto3 é necessário para import_csv_s3. Instale com: pip install boto3"
+            )
+        s3 = boto3.client("s3", region_name=region_name)
+        response = s3.get_object(Bucket=bucket, Key=key)
+        content = response["Body"].read().decode("utf-8")
+        reader = csv.DictReader(io.StringIO(content))
+        for row in reader:
+            project = Project(
+                id=row["id"],
+                name=row["name"],
+                description=row["description"],
+                status=row.get("status", "planejado"),
+            )
+            if project.id not in self._projects:
+                self.add_project(project)
 
     def build_agent(self, model: ReadyModel | None = None) -> RAGAgent:
         ready_model = model if model is not None else EchoReadyModel()
