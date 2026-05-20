@@ -17,6 +17,8 @@ src/
   main.py         # Exemplo de execução via CLI
   training.py     # Pipeline simples de preparo de dados
   evaluation.py   # Métricas básicas de avaliação
+  projects.py     # Modelos e gestão de projetos
+  problems.py     # Modelos e gestão de problemas
 ```
 
 ## Design e arquitetura
@@ -129,6 +131,14 @@ pip install -r requirements.txt
   - atualização de status (`planejado`, `em_andamento`, `pausado`, `concluido`, `cancelado`)
   - busca por nome/descrição
   - perguntas ao agente com contexto dos projetos cadastrados
+
+## Modelos de problemas
+- `src/problems.py` adiciona modelos para registrar problemas do projeto com:
+  - cadastro e remoção de problemas
+  - atualização de status (`aberto`, `investigando`, `resolvido`, `arquivado`)
+  - controle de severidade (`baixa`, `media`, `alta`, `critica`)
+  - busca por título/descrição
+  - perguntas ao agente com contexto dos problemas cadastrados
 
 ## Como executar
 ```bash
