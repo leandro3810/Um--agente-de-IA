@@ -1,8 +1,10 @@
+import io
+import json
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from urllib.error import URLError
 
-from src.agent import Document, EchoReadyModel, N8NWebhookModel, OpenAIModel, RAGAgent, SimpleRetriever
+from src.agent import Document, EchoReadyModel, N8NWebhookModel, OpenAIModel, BedrockModel, RAGAgent, SimpleRetriever
 
 
 class AgentTests(unittest.TestCase):
@@ -68,6 +70,44 @@ class AgentTests(unittest.TestCase):
         answer = agent.ask("Como reduzir alucinação?")
         self.assertIn("Contexto", answer)
         self.assertIn("RAG reduz alucinação", answer)
+
+    def test_bedrock_model_success_response(self):
+        mock_boto3 = MagicMock()
+        mock_client = mock_boto3.client.return_value
+        response_payload = json.dumps({
+            "content": [{"type": "text", "text": "resposta bedrock"}]
+        }).encode("utf-8")
+        mock_client.invoke_model.return_value = {"body": io.BytesIO(response_payload)}
+
+        with patch("src.agent.boto3", mock_boto3):
+            model = BedrockModel(model_id="anthropic.claude-3-haiku-20240307-v1:0", region_name="us-east-1")
+            answer = model.generate("Teste Bedrock")
+
+        self.assertEqual(answer, "resposta bedrock")
+        mock_boto3.client.assert_called_once_with("bedrock-runtime", region_name="us-east-1")
+        call_kwargs = mock_client.invoke_model.call_args.kwargs
+        self.assertEqual(call_kwargs["modelId"], "anthropic.claude-3-haiku-20240307-v1:0")
+        body_sent = json.loads(call_kwargs["body"])
+        self.assertEqual(body_sent["messages"][0]["content"], "Teste Bedrock")
+        self.assertEqual(body_sent["anthropic_version"], "bedrock-2023-05-31")
+
+    def test_bedrock_model_wraps_client_errors(self):
+        mock_boto3 = MagicMock()
+        mock_client = mock_boto3.client.return_value
+        mock_client.invoke_model.side_effect = Exception("AccessDenied")
+
+        with patch("src.agent.boto3", mock_boto3):
+            model = BedrockModel()
+            with self.assertRaises(RuntimeError) as ctx:
+                model.generate("Teste")
+        self.assertIn("Amazon Bedrock", str(ctx.exception))
+        self.assertIsInstance(ctx.exception.__cause__, Exception)
+
+    def test_bedrock_model_raises_when_boto3_unavailable(self):
+        with patch("src.agent.boto3", None):
+            with self.assertRaises(ImportError) as ctx:
+                BedrockModel()
+        self.assertIn("boto3", str(ctx.exception))
 
 
 if __name__ == "__main__":

@@ -42,6 +42,59 @@ agent = RAGAgent(model=model, retriever=SimpleRetriever(docs))
 print(agent.ask("Me atualize sobre o projeto"))
 ```
 
+## Integração com AWS
+
+### Amazon Bedrock (modelos de linguagem)
+- `BedrockModel` em `src/agent.py` usa o Amazon Bedrock Runtime para invocar modelos de IA (padrão: Anthropic Claude 3 Haiku).
+- Autenticação via cadeia de credenciais padrão do boto3 (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, perfil `~/.aws/credentials`, IAM Role, etc.).
+- Exemplo de uso:
+```python
+from src.agent import BedrockModel, Document, RAGAgent, SimpleRetriever
+
+docs = [Document("1", "Contexto do projeto")]
+model = BedrockModel(
+    model_id="anthropic.claude-3-haiku-20240307-v1:0",  # padrão
+    region_name="us-east-1",  # padrão
+)
+agent = RAGAgent(model=model, retriever=SimpleRetriever(docs))
+print(agent.ask("Resuma o projeto"))
+```
+
+### Amazon S3 (persistência de projetos)
+- `ProjectManager.export_csv_s3(bucket, key)` — exporta projetos como CSV para um bucket S3.
+- `ProjectManager.import_csv_s3(bucket, key)` — importa projetos de um CSV armazenado no S3.
+- Exemplo de uso:
+```python
+from src.projects import Project, ProjectManager
+
+manager = ProjectManager([
+    Project("p1", "Site institucional", "Atualizar landing page", "em_andamento"),
+])
+
+# Exportar para S3
+manager.export_csv_s3("meu-bucket", "projetos/export.csv", region_name="sa-east-1")
+
+# Importar do S3 para um novo gerenciador
+novo_manager = ProjectManager()
+novo_manager.import_csv_s3("meu-bucket", "projetos/export.csv", region_name="sa-east-1")
+```
+
+### Configuração de credenciais AWS
+```bash
+# Opção 1: variáveis de ambiente
+export AWS_ACCESS_KEY_ID=AKIA...
+export AWS_SECRET_ACCESS_KEY=...
+export AWS_DEFAULT_REGION=us-east-1
+
+# Opção 2: arquivo de credenciais
+aws configure
+```
+
+### Dependências
+```bash
+pip install -r requirements.txt
+```
+
 ## Infraestrutura sugerida
 - Executar localmente com Python.
 - Evolução natural:

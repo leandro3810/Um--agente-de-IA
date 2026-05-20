@@ -7,6 +7,11 @@ from typing import Iterable, Protocol
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
+try:
+    import boto3
+except ImportError:  # pragma: no cover
+    boto3 = None  # type: ignore[assignment]
+
 
 @dataclass(frozen=True)
 class Document:
@@ -124,6 +129,63 @@ class OpenAIModel:
             return json.dumps(parsed, ensure_ascii=False)
 
         return response_body
+
+
+class BedrockModel:
+    """Adapter ReadyModel para Amazon Bedrock Runtime (modelos Anthropic Claude).
+
+    Requer credenciais AWS configuradas via variáveis de ambiente, perfil ou IAM Role:
+    - AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY (+ AWS_SESSION_TOKEN se usar credenciais temporárias)
+    - Ou configure via ``aws configure`` / perfil de instância EC2 / IAM Role.
+    """
+
+    DEFAULT_MODEL_ID = "anthropic.claude-3-haiku-20240307-v1:0"
+
+    def __init__(
+        self,
+        model_id: str = DEFAULT_MODEL_ID,
+        region_name: str = "us-east-1",
+        max_tokens: int = 1024,
+    ) -> None:
+        if boto3 is None:
+            raise ImportError(
+                "boto3 é necessário para BedrockModel. Instale com: pip install boto3"
+            )
+        self._client = boto3.client("bedrock-runtime", region_name=region_name)
+        self._model_id = model_id
+        self._max_tokens = max_tokens
+
+    def generate(self, prompt: str) -> str:
+        body = json.dumps({
+            "anthropic_version": "bedrock-2023-05-31",
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": self._max_tokens,
+        })
+        try:
+            response = self._client.invoke_model(
+                modelId=self._model_id,
+                body=body,
+                contentType="application/json",
+                accept="application/json",
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"falha ao chamar Amazon Bedrock (model={self._model_id}): {exc}"
+            ) from exc
+
+        response_body = json.loads(response["body"].read())
+
+        if isinstance(response_body, dict):
+            content = response_body.get("content")
+            if isinstance(content, list) and content:
+                first = content[0]
+                if isinstance(first, dict):
+                    text = first.get("text")
+                    if isinstance(text, str):
+                        return text
+            return json.dumps(response_body, ensure_ascii=False)
+
+        return str(response_body)
 
 
 class SimpleRetriever:
