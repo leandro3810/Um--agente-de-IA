@@ -36,6 +36,15 @@ class ProblemManagerTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].id, "pr1")
 
+    def test_search_with_empty_term_returns_all(self):
+        manager = ProblemManager([
+            Problem("pr1", "Erro de login", "Falha ao autenticar no portal", "alta"),
+            Problem("pr2", "Timeout API", "Resposta lenta na API de pedidos", "critica"),
+        ])
+
+        self.assertEqual(len(manager.search("")), 2)
+        self.assertEqual(len(manager.search("   ")), 2)
+
     def test_ask_problem_context(self):
         manager = ProblemManager([
             Problem("pr1", "Erro de login", "Falha ao autenticar no portal", "alta"),
@@ -44,6 +53,14 @@ class ProblemManagerTests(unittest.TestCase):
         answer = manager.ask("Qual problema é crítico?")
         self.assertIn("Timeout API", answer)
         self.assertIn("Severidade: critica", answer)
+
+    def test_ask_without_matching_context(self):
+        manager = ProblemManager([
+            Problem("pr1", "Erro de login", "Falha ao autenticar no portal", "alta"),
+        ])
+
+        answer = manager.ask("zzqv")
+        self.assertIn("(sem contexto encontrado)", answer)
 
     def test_validation_errors(self):
         manager = ProblemManager([Problem("pr1", "Erro", "Descrição", "media")])
